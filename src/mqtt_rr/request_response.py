@@ -74,6 +74,7 @@ class MqttRequestResponse:
 
         self.username = username
         self.password = password
+        self.innerstatus = {}
 
         # Track outgoing requests: request_id -> {timestamp, timeout, queue, last_status}
         self.pending_requests = {}
@@ -104,9 +105,10 @@ class MqttRequestResponse:
     def _on_connect(self, client, userdata, flags, rc):
         print(f"[MQTT] Connected with result code {rc}")
         # Publish "online" status (retained)
+        self.innerstatus['status']="online"
         client.publish(
             self.last_will_topic,
-            json.dumps({"status": "online"}),
+            json.dumps(self.innerstatus),
             retain=True
         )
         # Subscribe to default request_topic and response_topic
@@ -268,6 +270,16 @@ class MqttRequestResponse:
 
         self.client.publish(dest_topic, json.dumps(payload))
         return request_id
+
+    def update_status(self, status:dict):
+        self.innerstatus = status
+        self.innerstatus['status']="online"
+        self.client.publish(
+            self.last_will_topic,            
+            json.dumps(self.innerstatus),
+            retain=True
+        )
+
 
     def poll_next_response(self, request_id, timeout=5.0):
         """
