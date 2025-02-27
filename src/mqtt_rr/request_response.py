@@ -1,5 +1,4 @@
-# src/my_mqtt_rr/request_response.py
-
+# src/mqtt_rr/request_response.py
 import json
 import time
 import uuid
@@ -22,7 +21,7 @@ class MqttRequestResponse:
       - Support MQTT username and password for broker auth.
 
     If multiple servers reply to the same request_id, this class will queue all
-    responses in the same request’s queue. The application can consume them via
+    responses in the same requestï¿½s queue. The application can consume them via
     'poll_next_response(request_id)' or track status changes with a callback.
     """
 
