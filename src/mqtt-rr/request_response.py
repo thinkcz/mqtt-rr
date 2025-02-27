@@ -90,6 +90,12 @@ class MqttRequestResponse:
         self.client.on_connect = self._on_connect
         self.client.on_message = self._on_message
 
+        self.last_will_topic = f"devices/{self.client_id}/status"
+        self.client.will_set(
+            self.last_will_topic,
+            payload=json.dumps({"status": "offline"}),
+            retain=True
+        )
         # Housekeeping thread (for timeouts)
         self._stop_event = threading.Event()
         self.housekeeping_thread = threading.Thread(
@@ -98,7 +104,12 @@ class MqttRequestResponse:
 
     def _on_connect(self, client, userdata, flags, rc):
         print(f"[MQTT] Connected with result code {rc}")
-
+        # Publish "online" status (retained)
+        client.publish(
+            self.last_will_topic,
+            json.dumps({"status": "online"}),
+            retain=True
+        )
         # Subscribe to default request_topic and response_topic
         client.subscribe(self.request_topic)
         client.subscribe(self.response_topic)
