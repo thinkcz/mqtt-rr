@@ -34,6 +34,7 @@ class MqttRequestResponse:
         timeout_interval=1.0,
         on_request_callback=None,
         on_request_status_change=None,
+        on_message=None,
         additional_subscriptions=None,
         client_id=None,
         username=None,
@@ -69,6 +70,7 @@ class MqttRequestResponse:
 
         self.on_request_callback = on_request_callback or self._default_on_request
         self.on_request_status_change = on_request_status_change
+        self.on_message = on_message
         self.additional_subscriptions = additional_subscriptions or []
         self.client_id = client_id
 
@@ -134,6 +136,8 @@ class MqttRequestResponse:
         msg_type = payload.get("type")         # "request" or "response"
         request_id = payload.get("request_id") # correlation ID
         if not msg_type or not request_id:
+            if self.on_message:
+               self.on_message(client, msg.topic, payload)
             return  # Possibly irrelevant message
 
         if msg_type == "request":
